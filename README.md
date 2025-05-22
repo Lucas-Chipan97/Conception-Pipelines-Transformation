@@ -1,93 +1,100 @@
-# Projet ETL - Transformation et Qualité des Données
+# Pipeline ETL - Nettoyage, Transformation et Validation de Données
 
-> Pipeline complet pour le traitement, l'enrichissement et la transformation robuste de données dans un contexte ETL.
+> Ce projet Python propose un pipeline ETL complet et dynamique permettant de traiter, enrichir et valider automatiquement un jeu de données. Il inclut une gestion robuste des erreurs, une journalisation, et une validation croisée pour assurer la qualité des données.
 
-## Objectif
+## 🛠 Fonctionnalités principales
 
-Assurer un flux de traitement des données fiable, automatisé et évolutif, incluant toutes les étapes clés du cycle de vie d’un jeu de données en ETL : nettoyage, validation, transformation, enrichissement, normalisation, avec gestion d’erreurs intégrée.
+- Analyse initiale : dimensions, valeurs manquantes, doublons, valeurs aberrantes
+- Nettoyage automatisé : traitement des valeurs manquantes, suppression d’anomalies, dédoublonnage
+- Transformation enrichie : colonnes calculées, catégories, normalisation
+- Agrégation : résumés statistiques par produit
+- Validation finale : contrôles qualité automatiques, validation croisée
+- Logging intégré et gestion des erreurs (try/except)
+- Sauvegarde des fichiers nettoyés et agrégés
 
-## Étapes du Pipeline
+## 📦 Dépendances
 
-### 🔹 1. Nettoyage des données
-- Suppression des doublons (via `np.unique` ou `pandas.drop_duplicates`)
-- Remplacement des valeurs manquantes (`np.nanmean`, `fillna`)
-- Fusion des entités similaires (logique métier ou fuzzy matching)
-- Normalisation initiale (min-max ou z-score)
+- `pandas`
+- `numpy`
+- `logging` (standard)
+- `datetime` (standard)
 
-### 🔹 2. Validation des données
-- Conformité aux types et formats (dates, numériques, etc.)
-- Contrôle de plages (valeurs réalistes uniquement)
-- Vérification des clés primaires/étrangères
-- Cohérence intercolonnes (ex. : âge ↔ date de naissance)
-
-### 🔹 3. Transformation des données
-- Calculs dérivés (TVA, revenus, délais, etc.)
-- Agrégation (groupes par région, produit, etc.)
-- Conversion de formats (dates, devises, unités)
-- Ajout de colonnes métier ou horodatées
-- Adaptation aux besoins spécifiques de l’entreprise
-
-### 🔹 4. Enrichissement
-- Intégration de données externes (démographie, segments)
-- Ajout de colonnes issues de mappings ou de regroupements
-- Personnalisation client / produit
-- Préparation pour la segmentation, analyse ou visualisation
-
-### 🔹 5. Normalisation
-- Mise à l’échelle des variables (min-max / z-score)
-- Réduction de redondance pour assurer la qualité
-- Structuration des données pour l’entreposage
-- Conformité aux bonnes pratiques de modélisation
-
-### 🔹 6. Gestion des erreurs
-- `try/except` avec messages explicites
-- Journalisation automatique avec détails des erreurs
-- Mise en quarantaine des lignes corrompues
-- Reprise du traitement sans perte de données
-
-## Exemple de pipeline (simplifié)
+## 🚀 Exemple d’utilisation
 
 ```python
-from pipeline_etl import executer_pipeline
+from pipeline_etl import pipeline_etl_complet
 
-executer_pipeline("ventes_brutes.csv")
-# Résultat: ventes_brutes_nettoyees.csv, logs.txt, rapport_qualite.txt
+# Exécution du pipeline
+pipeline_etl_complet("donnees_ventes.csv")
 ```
 
-## Bonnes pratiques appliquées
+## 📊 Étapes du Pipeline
 
-- **Logging horodaté** et suivi des erreurs
-- **Validation croisée** à chaque étape
-- **Variables paramétrables** pour l’adaptabilité
-- **Tests unitaires recommandés** avant intégration
-- **Documentation incluse** dans les scripts
+### 1. Chargement
+Lecture des données via `pandas.read_csv()`
 
-## Configurations possibles
+### 2. Analyse des données
+- Affichage des dimensions
+- Comptage des valeurs manquantes par colonne
+- Détection de doublons (généraux et sur les IDs)
+- Identification des valeurs aberrantes (négatifs et zéros)
 
-```python
-SEUIL_IQR = 1.5
-FORMAT_DATE_ATTENDU = "%Y-%m-%d"
-TAUX_TVA = 20
-STRATEGIE_VALEURS_MANQUANTES = {
-    "Prix": "moyenne",
-    "Quantité": "médiane",
-    "Date": "default"
-}
+### 3. Nettoyage
+- Remplacement des valeurs manquantes :
+  - `Nom_produit` → "Produit_Inconnu"
+  - `Quantite_vendue` → médiane
+  - `Prix_unitaire` → moyenne
+- Suppression des valeurs aberrantes (négatives, prix à 0)
+- Plafonnement des extrêmes par méthode IQR
+- Suppression des doublons (ligne complète et par ID)
+
+### 4. Transformations
+- Colonnes calculées : `Chiffre_affaires`, `Timestamp_traitement`
+- Catégorisation : `Categorie_prix`, `Categorie_volume`
+- Normalisation min-max : `Quantite_vendue`, `Prix_unitaire`, `Chiffre_affaires`
+
+### 5. Agrégation
+- Groupement par `Nom_produit`
+- Statistiques : somme, moyenne, min/max, nombre de ventes
+- Création d’une colonne `Performance` basée sur le chiffre d’affaires total
+
+### 6. Validation
+- Contrôle des valeurs manquantes et doublons
+- Unicité des IDs
+- Présence des colonnes transformées
+- Validation croisée du chiffre d'affaires
+
+### 7. Sauvegarde
+- Fichier nettoyé : `*_nettoye.csv`
+- Fichier agrégats : `*_agregats.csv`
+
+## 🔍 Exemple de test intégré
+
+Le script contient une fonction `test_pipeline()` qui permet de tester automatiquement le pipeline avec des données synthétiques. Ce test inclut des cas de valeurs manquantes, doublons et valeurs aberrantes pour valider le bon fonctionnement de bout en bout.
+
+## 📁 Structure attendue
+
+```
+.
+├── pipeline_etl.py
+├── jeu_donnees_etl_5000_lignes.csv
+├── jeu_donnees_etl_5000_lignes_nettoye.csv
+├── jeu_donnees_etl_5000_lignes_agregats.csv
+└── README.md
 ```
 
-## Résultats attendus
+## ✅ Résultats attendus
 
-- ✅ Données sans doublons ni valeurs aberrantes
-- ✅ Variables harmonisées et cohérentes
-- ✅ Agrégats prêts pour reporting ou BI
-- ✅ Logs clairs et auditables
-- ✅ Traçabilité complète de chaque transformation
+- Données nettoyées, transformées et enrichies
+- Agrégats synthétiques par produit
+- Journaux d'exécution clairs
+- Validation automatisée des données
+- Exécution robuste même en cas d’erreurs
 
-## Version actuelle
+## 🧪 Test automatique
 
-**v1.3.0 - Pipeline robuste avec enrichissement et normalisation**
+Le pipeline est automatiquement testable via une entrée console pour choisir le jeu de données de test synthétique ou réel.
 
-- Enrichissement externe intégré
-- Création dynamique de colonnes
-- Gestion des exceptions améliorée
-- Journalisation multi-niveaux
+---
+
+© Projet pédagogique de traitement de données pour l’analyse ETL avec Python. Toutes les données sont fictives.
