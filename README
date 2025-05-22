@@ -1,210 +1,93 @@
-# Projet ETL - Nettoyage de Données
+# Projet ETL - Transformation et Qualité des Données
 
-> Pipeline complet de nettoyage et transformation de données pour l'analyse ETL
+> Pipeline complet pour le traitement, l'enrichissement et la transformation robuste de données dans un contexte ETL.
 
-## Description
+## Objectif
 
-Ce projet propose une suite complète d'outils Python pour le nettoyage et la transformation de données dans un contexte ETL. Il permet d'analyser, nettoyer et valider automatiquement la qualité des données avec gestion robuste des erreurs.
+Assurer un flux de traitement des données fiable, automatisé et évolutif, incluant toutes les étapes clés du cycle de vie d’un jeu de données en ETL : nettoyage, validation, transformation, enrichissement, normalisation, avec gestion d’erreurs intégrée.
 
-## Fonctionnalités
+## Étapes du Pipeline
 
-- **Analyse automatique des données** - Détection des problèmes de qualité
-- **Traitement des valeurs manquantes** - Stratégies adaptées par type de colonne
-- **Gestion des valeurs aberrantes** - Détection IQR et ajustements intelligents
-- **Suppression des doublons** - Nettoyage complet et IDs uniques
-- **Validation croisée** - Contrôles de qualité après traitement
-- **Gestion d'erreurs robuste** - Try/except et logging complet
-- **Sauvegarde automatique** - Fichiers nettoyés avec validation
+### 🔹 1. Nettoyage des données
+- Suppression des doublons (via `np.unique` ou `pandas.drop_duplicates`)
+- Remplacement des valeurs manquantes (`np.nanmean`, `fillna`)
+- Fusion des entités similaires (logique métier ou fuzzy matching)
+- Normalisation initiale (min-max ou z-score)
 
-## Installation
+### 🔹 2. Validation des données
+- Conformité aux types et formats (dates, numériques, etc.)
+- Contrôle de plages (valeurs réalistes uniquement)
+- Vérification des clés primaires/étrangères
+- Cohérence intercolonnes (ex. : âge ↔ date de naissance)
 
-```bash
-# Cloner le repository
-git clone https://github.com/votre-username/etl-data-cleaning.git
-cd etl-data-cleaning
+### 🔹 3. Transformation des données
+- Calculs dérivés (TVA, revenus, délais, etc.)
+- Agrégation (groupes par région, produit, etc.)
+- Conversion de formats (dates, devises, unités)
+- Ajout de colonnes métier ou horodatées
+- Adaptation aux besoins spécifiques de l’entreprise
 
-# Installer les dépendances
-pip install pandas numpy
-```
+### 🔹 4. Enrichissement
+- Intégration de données externes (démographie, segments)
+- Ajout de colonnes issues de mappings ou de regroupements
+- Personnalisation client / produit
+- Préparation pour la segmentation, analyse ou visualisation
 
-## Utilisation rapide
+### 🔹 5. Normalisation
+- Mise à l’échelle des variables (min-max / z-score)
+- Réduction de redondance pour assurer la qualité
+- Structuration des données pour l’entreposage
+- Conformité aux bonnes pratiques de modélisation
+
+### 🔹 6. Gestion des erreurs
+- `try/except` avec messages explicites
+- Journalisation automatique avec détails des erreurs
+- Mise en quarantaine des lignes corrompues
+- Reprise du traitement sans perte de données
+
+## Exemple de pipeline (simplifié)
 
 ```python
-# Script complet - tout en un
-python nettoyage_donnees_complet.py
+from pipeline_etl import executer_pipeline
 
-# Scripts individuels
-python analyse_donnees.py
-python traitement_valeurs_manquantes.py
-python gestion_valeurs_aberrantes.py
+executer_pipeline("ventes_brutes.csv")
+# Résultat: ventes_brutes_nettoyees.csv, logs.txt, rapport_qualite.txt
 ```
 
-## Scripts disponibles
+## Bonnes pratiques appliquées
 
-### 1. analyse_donnees.py
-Analyse initiale complète du jeu de données
-- Détection des valeurs manquantes
-- Identification des doublons
-- Recherche des valeurs aberrantes
-- Statistiques descriptives
+- **Logging horodaté** et suivi des erreurs
+- **Validation croisée** à chaque étape
+- **Variables paramétrables** pour l’adaptabilité
+- **Tests unitaires recommandés** avant intégration
+- **Documentation incluse** dans les scripts
 
-### 2. traitement_valeurs_manquantes.py
-Gestion intelligente des valeurs manquantes
-- Remplacement par médiane/moyenne
-- Valeurs par défaut contextuelles
-- Stratégies par type de colonne
+## Configurations possibles
 
-### 3. gestion_valeurs_aberrantes.py
-Traitement des valeurs aberrantes
-- Méthode IQR pour la détection
-- Plafonnement des valeurs extrêmes
-- Suppression des valeurs impossibles
-
-### 4. nettoyage_donnees_complet.py
-Pipeline complet de nettoyage
-- Traitement automatique de bout en bout
-- Validation croisée intégrée
-- Gestion d'erreurs complète
-
-## Exemples
-
-### Analyse simple
-```python
-import pandas as pd
-
-# Charger et analyser
-df = pd.read_csv('donnees.csv')
-print(f"Lignes: {len(df)}")
-print(f"Valeurs manquantes: {df.isnull().sum().sum()}")
-```
-
-### Nettoyage complet
-```python
-from nettoyage_donnees_complet import nettoyer_donnees
-
-# Nettoyer automatiquement
-donnees_propres = nettoyer_donnees('donnees.csv')
-print(f"Données nettoyées sauvées dans: donnees_nettoye.csv")
-```
-
-## Structure du projet
-
-```
-etl-data-cleaning/
-├── analyse_donnees.py
-├── traitement_valeurs_manquantes.py
-├── gestion_valeurs_aberrantes.py
-├── nettoyage_donnees_complet.py
-├── donnees_test/
-│   └── jeu_donnees_etl_5000_lignes.csv
-├── resultats/
-│   ├── donnees_nettoye.csv
-│   └── rapport_qualite.txt
-└── README.md
-```
-
-## Configuration
-
-### Paramètres par défaut
-- **Seuil IQR**: 1.5 (détection aberrants)
-- **Valeurs manquantes**: Médiane pour quantités, moyenne pour prix
-- **Doublons**: Conservation du dernier enregistrement
-- **Logging**: Level INFO avec horodatage
-
-### Personnalisation
-Modifiez les variables en début de script :
 ```python
 SEUIL_IQR = 1.5
-STRATEGIE_DOUBLONS = 'last'  # 'first' ou 'last'
-VALEUR_DEFAUT_PRODUIT = 'Produit_Inconnu'
+FORMAT_DATE_ATTENDU = "%Y-%m-%d"
+TAUX_TVA = 20
+STRATEGIE_VALEURS_MANQUANTES = {
+    "Prix": "moyenne",
+    "Quantité": "médiane",
+    "Date": "default"
+}
 ```
 
-## Stratégies de nettoyage
+## Résultats attendus
 
-### Valeurs manquantes
-- **ID_produit**: Suppression des lignes (obligatoire)
-- **Nom_produit**: Remplacement par "Produit_Inconnu"  
-- **Quantite_vendue**: Imputation par la médiane
-- **Prix_unitaire**: Imputation par la moyenne
-- **Date_vente**: Valeur par défaut "1900-01-01"
+- ✅ Données sans doublons ni valeurs aberrantes
+- ✅ Variables harmonisées et cohérentes
+- ✅ Agrégats prêts pour reporting ou BI
+- ✅ Logs clairs et auditables
+- ✅ Traçabilité complète de chaque transformation
 
-### Valeurs aberrantes
-- **Quantités négatives**: Suppression complète
-- **Prix négatifs/zéros**: Suppression complète
-- **Valeurs extrêmes**: Plafonnement aux limites IQR
-- **Ajustements**: Remplacement par médiane si nécessaire
+## Version actuelle
 
-### Doublons
-- **Lignes identiques**: Suppression complète
-- **IDs dupliqués**: Conservation du dernier enregistrement
-- **Validation**: Vérification de l'unicité des IDs
+**v1.3.0 - Pipeline robuste avec enrichissement et normalisation**
 
-## Validation de qualité
-
-Le système effectue automatiquement ces contrôles :
-- ✅ Absence de valeurs manquantes
-- ✅ Unicité des identifiants
-- ✅ Cohérence des plages de valeurs
-- ✅ Intégrité des types de données
-- ✅ Validation des règles métier
-
-## Gestion d'erreurs
-
-Erreurs gérées automatiquement :
-- Fichiers introuvables
-- Formats CSV corrompus
-- Colonnes manquantes
-- Erreurs de types de données
-- Problèmes de sauvegarde
-
-## Logs et monitoring
-
-Les logs incluent :
-- Horodatage de chaque opération
-- Nombre d'éléments traités
-- Erreurs rencontrées
-- Statistiques de transformation
-- Validation des résultats
-
-## Performance
-
-### Temps d'exécution typiques
-- 5K lignes: ~2 secondes
-- 50K lignes: ~15 secondes  
-- 500K lignes: ~2 minutes
-
-### Optimisations
-- Traitement vectorisé avec Pandas
-- Validation par chunks pour gros volumes
-- Logging optimisé pour la performance
-
-## Contribution
-
-1. Fork du projet
-2. Créer une branche feature
-3. Commit des modifications
-4. Push vers la branche
-5. Ouvrir une Pull Request
-
-### Standards de code
-- PEP 8 pour le style Python
-- Docstrings pour toutes les fonctions
-- Tests unitaires recommandés
-- Gestion d'erreurs obligatoire
-
-## Versions
-
-### v1.0.0 - Version initiale
-- Scripts de base pour nettoyage
-- Gestion des valeurs manquantes
-- Traitement des aberrants
-
-### v1.1.0 - Améliorations
-- Pipeline complet intégré
-- Validation croisée
-- Gestion d'erreurs robuste
-
-### v1.2.0 - Fonctionnalités avancées
-- Logging détaillé
-- Optimisations performance
-- Documentation complète
+- Enrichissement externe intégré
+- Création dynamique de colonnes
+- Gestion des exceptions améliorée
+- Journalisation multi-niveaux
